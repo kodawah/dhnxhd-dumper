@@ -43,12 +43,12 @@ int main(int argc, char **argv)
     for (i = 0; i < 29; i++) {
         vc_id cid;
         memcpy(&cid, &ibuf[sizeof(vc_id) * i], sizeof(vc_id));
-        fprintf(stdout, "profile %d - cid %u\n", i, cid.compressionID);
-        fprintf(stdout, "  name %s - family %s (%s)\n",
+        fprintf(stderr, "profile %d - cid %u\n", i, cid.compressionID);
+        fprintf(stderr, "  name %s - family %s (%s)\n",
                 cid.Name, cid.CompressionFamily, cid.FrameSizeType);
-        fprintf(stdout, "  bitrate %d - size %dx%d @ %d\n",
+        fprintf(stderr, "  bitrate %d - size %dx%d @ %d\n",
                 cid.bitrate, cid.Image_Width, cid.Image_Height, cid.bitdepth);
-        fprintf(stdout, "  scantype %s - factor %s\n",
+        fprintf(stderr, "  scantype %s - factor %s\n",
                 cid.ScanType, cid.CompressionFactor);
     }
 }
