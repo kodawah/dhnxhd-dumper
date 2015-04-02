@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 {
     uint8_t ibuf[181192];
     int ilen = fread(ibuf, 1, sizeof(ibuf), stdin);
-    int i;
+    int i, j;
 
     for (i = 0; i < 29; i++) {
         vc_id cid;
@@ -67,5 +67,26 @@ int main(int argc, char **argv)
         fprintf(stdout, "      dnxhd_%d_run_codes, dnxhd_%d_run_bit, dnxhd_%d_run\n",
                 cid.compressionID, cid.compressionID, cid.compressionID);
         fprintf(stdout, "      { FILL, ME, WITH, SENSE } },\n\n");
+
+        fprintf(stdout, "static const uint8_t dnxhd_%d_luma_weight[] = {\n",
+                cid.compressionID);
+        for (j = 0; j < 64; j += 8) {
+            fprintf(stdout, "     %d, %d, %d, %d, %d, %d, %d, %d,\n",
+                    cid.LumaQTable[j + 0], cid.LumaQTable[j + 1],
+                    cid.LumaQTable[j + 2], cid.LumaQTable[j + 3],
+                    cid.LumaQTable[j + 4], cid.LumaQTable[j + 5],
+                    cid.LumaQTable[j + 6], cid.LumaQTable[j + 7]);
+        }
+        fprintf(stdout, "};\n\n");
+        fprintf(stdout, "static const uint8_t dnxhd_%d_chroma_weight[] = {\n",
+                cid.compressionID);
+        for (j = 0; j < 64; j += 8) {
+            fprintf(stdout, "     %d, %d, %d, %d, %d, %d, %d, %d,\n",
+                    cid.ChromaQTable[j + 0], cid.ChromaQTable[j + 1],
+                    cid.ChromaQTable[j + 2], cid.ChromaQTable[j + 3],
+                    cid.ChromaQTable[j + 4], cid.ChromaQTable[j + 5],
+                    cid.ChromaQTable[j + 6], cid.ChromaQTable[j + 7]);
+        }
+        fprintf(stdout, "};\n\n");
     }
 }
