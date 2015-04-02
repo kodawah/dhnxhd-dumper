@@ -83,11 +83,21 @@ int main(int argc, char **argv)
 {
     uint8_t ibuf[181192];
     int ilen = fread(ibuf, 1, sizeof(ibuf), stdin);
-    int i;
+    int i, prof = -1;
+
+    if (argc == 2)
+        prof = atoi(argv[1]);
 
     for (i = 0; i < 29; i++) {
         vc_id cid;
         memcpy(&cid, &ibuf[sizeof(vc_id) * i], sizeof(vc_id));
+
+        if (argc == 2) {
+            if (cid.compressionID != prof)
+                continue;
+            dump(&cid);
+            break;
+        }
 
         fprintf(stderr, "profile cid %u\n", cid.compressionID);
         fprintf(stderr, "  name %s - family %s (%s)\n",
@@ -96,8 +106,6 @@ int main(int argc, char **argv)
                 cid.bitrate, cid.Image_Width, cid.Image_Height, cid.bitdepth);
         fprintf(stderr, "  scantype %s - factor %s\n",
                 cid.ScanType, cid.CompressionFactor);
-
-        dump(&cid);
     }
 
     return 0;
