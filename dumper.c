@@ -34,59 +34,71 @@ typedef struct vc_id {
     uint16_t Valid_DC_Code_len;
 } vc_id;
 
+int dump(vc_id *cid)
+{
+    int i;
+
+    fprintf(stdout, "    { %d, %d, %d, %d, %d, %d, %d, %d,\n",
+            cid->compressionID, cid->Image_Width, cid->Image_Height,
+            !!strcmp((char *)cid->ScanType, "Progressive"),
+            cid->CompressedFrameSize, cid->CompressedFrameSize,
+            cid->bitdepth == 8 ? 4 : 6, cid->bitdepth);
+    fprintf(stdout, "      dnxhd_%d_luma_weight, dnxhd_%d_chroma_weight,\n",
+            cid->compressionID, cid->compressionID);
+    fprintf(stdout, "      dnxhd_%d_dc_codes, dnxhd_%d_dc_bits,\n",
+            cid->compressionID, cid->compressionID);
+    fprintf(stdout, "      dnxhd_%d_ac_codes, dnxhd_%d_ac_bits, dnxhd_%d_ac_level\n",
+            cid->compressionID, cid->compressionID, cid->compressionID);
+    fprintf(stdout, "      dnxhd_%d_ac_run_flag, dnxhd_%d_ac_index_flag\n",
+            cid->compressionID, cid->compressionID);
+    fprintf(stdout, "      dnxhd_%d_run_codes, dnxhd_%d_run_bit, dnxhd_%d_run\n",
+            cid->compressionID, cid->compressionID, cid->compressionID);
+    fprintf(stdout, "      { FILL, ME, WITH, SENSE } },\n\n");
+
+    fprintf(stdout, "static const uint8_t dnxhd_%d_luma_weight[] = {\n",
+            cid->compressionID);
+    for (i = 0; i < 64; i += 8) {
+        fprintf(stdout, "     %d, %d, %d, %d, %d, %d, %d, %d,\n",
+                cid->LumaQTable[i + 0], cid->LumaQTable[i + 1],
+                cid->LumaQTable[i + 2], cid->LumaQTable[i + 3],
+                cid->LumaQTable[i + 4], cid->LumaQTable[i + 5],
+                cid->LumaQTable[i + 6], cid->LumaQTable[i + 7]);
+    }
+    fprintf(stdout, "};\n\n");
+    fprintf(stdout, "static const uint8_t dnxhd_%d_chroma_weight[] = {\n",
+            cid->compressionID);
+    for (i = 0; i < 64; i += 8) {
+        fprintf(stdout, "     %d, %d, %d, %d, %d, %d, %d, %d,\n",
+                cid->ChromaQTable[i + 0], cid->ChromaQTable[i + 1],
+                cid->ChromaQTable[i + 2], cid->ChromaQTable[i + 3],
+                cid->ChromaQTable[i + 4], cid->ChromaQTable[i + 5],
+                cid->ChromaQTable[i + 6], cid->ChromaQTable[i + 7]);
+    }
+    fprintf(stdout, "};\n\n");
+
+    return 0;
+}
+
 int main(int argc, char **argv)
 {
     uint8_t ibuf[181192];
     int ilen = fread(ibuf, 1, sizeof(ibuf), stdin);
-    int i, j;
+    int i;
 
     for (i = 0; i < 29; i++) {
         vc_id cid;
         memcpy(&cid, &ibuf[sizeof(vc_id) * i], sizeof(vc_id));
-        fprintf(stderr, "profile %d - cid %u\n", i, cid.compressionID);
+
+        fprintf(stderr, "profile cid %u\n", cid.compressionID);
         fprintf(stderr, "  name %s - family %s (%s)\n",
                 cid.Name, cid.CompressionFamily, cid.FrameSizeType);
-        fprintf(stderr,  "  bitrate %d - size %dx%d @ %d\n",
+        fprintf(stderr, "  bitrate %d - size %dx%d @ %d\n",
                 cid.bitrate, cid.Image_Width, cid.Image_Height, cid.bitdepth);
         fprintf(stderr, "  scantype %s - factor %s\n",
                 cid.ScanType, cid.CompressionFactor);
 
-        fprintf(stdout, "    { %d, %d, %d, %d, %d, %d, %d, %d,\n",
-                cid.compressionID, cid.Image_Width, cid.Image_Height,
-                !!strcmp((char *)cid.ScanType, "Progressive"),
-                cid.CompressedFrameSize, cid.CompressedFrameSize,
-                cid.bitdepth == 8 ? 4 : 6, cid.bitdepth);
-        fprintf(stdout, "      dnxhd_%d_luma_weight, dnxhd_%d_chroma_weight,\n",
-                cid.compressionID, cid.compressionID);
-        fprintf(stdout, "      dnxhd_%d_dc_codes, dnxhd_%d_dc_bits,\n",
-                cid.compressionID, cid.compressionID);
-        fprintf(stdout, "      dnxhd_%d_ac_codes, dnxhd_%d_ac_bits, dnxhd_%d_ac_level\n",
-                cid.compressionID, cid.compressionID, cid.compressionID);
-        fprintf(stdout, "      dnxhd_%d_ac_run_flag, dnxhd_%d_ac_index_flag\n",
-                cid.compressionID, cid.compressionID);
-        fprintf(stdout, "      dnxhd_%d_run_codes, dnxhd_%d_run_bit, dnxhd_%d_run\n",
-                cid.compressionID, cid.compressionID, cid.compressionID);
-        fprintf(stdout, "      { FILL, ME, WITH, SENSE } },\n\n");
-
-        fprintf(stdout, "static const uint8_t dnxhd_%d_luma_weight[] = {\n",
-                cid.compressionID);
-        for (j = 0; j < 64; j += 8) {
-            fprintf(stdout, "     %d, %d, %d, %d, %d, %d, %d, %d,\n",
-                    cid.LumaQTable[j + 0], cid.LumaQTable[j + 1],
-                    cid.LumaQTable[j + 2], cid.LumaQTable[j + 3],
-                    cid.LumaQTable[j + 4], cid.LumaQTable[j + 5],
-                    cid.LumaQTable[j + 6], cid.LumaQTable[j + 7]);
-        }
-        fprintf(stdout, "};\n\n");
-        fprintf(stdout, "static const uint8_t dnxhd_%d_chroma_weight[] = {\n",
-                cid.compressionID);
-        for (j = 0; j < 64; j += 8) {
-            fprintf(stdout, "     %d, %d, %d, %d, %d, %d, %d, %d,\n",
-                    cid.ChromaQTable[j + 0], cid.ChromaQTable[j + 1],
-                    cid.ChromaQTable[j + 2], cid.ChromaQTable[j + 3],
-                    cid.ChromaQTable[j + 4], cid.ChromaQTable[j + 5],
-                    cid.ChromaQTable[j + 6], cid.ChromaQTable[j + 7]);
-        }
-        fprintf(stdout, "};\n\n");
+        dump(&cid);
     }
+
+    return 0;
 }
