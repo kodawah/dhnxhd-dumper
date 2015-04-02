@@ -46,9 +46,26 @@ int main(int argc, char **argv)
         fprintf(stderr, "profile %d - cid %u\n", i, cid.compressionID);
         fprintf(stderr, "  name %s - family %s (%s)\n",
                 cid.Name, cid.CompressionFamily, cid.FrameSizeType);
-        fprintf(stderr, "  bitrate %d - size %dx%d @ %d\n",
+        fprintf(stderr,  "  bitrate %d - size %dx%d @ %d\n",
                 cid.bitrate, cid.Image_Width, cid.Image_Height, cid.bitdepth);
         fprintf(stderr, "  scantype %s - factor %s\n",
                 cid.ScanType, cid.CompressionFactor);
+
+        fprintf(stdout, "    { %d, %d, %d, %d, %d, %d, %d, %d,\n",
+                cid.compressionID, cid.Image_Width, cid.Image_Height,
+                !!strcmp((char *)cid.ScanType, "Progressive"),
+                cid.CompressedFrameSize, cid.CompressedFrameSize,
+                cid.bitdepth == 8 ? 4 : 6, cid.bitdepth);
+        fprintf(stdout, "      dnxhd_%d_luma_weight, dnxhd_%d_chroma_weight,\n",
+                cid.compressionID, cid.compressionID);
+        fprintf(stdout, "      dnxhd_%d_dc_codes, dnxhd_%d_dc_bits,\n",
+                cid.compressionID, cid.compressionID);
+        fprintf(stdout, "      dnxhd_%d_ac_codes, dnxhd_%d_ac_bits, dnxhd_%d_ac_level\n",
+                cid.compressionID, cid.compressionID, cid.compressionID);
+        fprintf(stdout, "      dnxhd_%d_ac_run_flag, dnxhd_%d_ac_index_flag\n",
+                cid.compressionID, cid.compressionID);
+        fprintf(stdout, "      dnxhd_%d_run_codes, dnxhd_%d_run_bit, dnxhd_%d_run\n",
+                cid.compressionID, cid.compressionID, cid.compressionID);
+        fprintf(stdout, "      { FILL, ME, WITH, SENSE } },\n\n");
     }
 }
