@@ -76,6 +76,18 @@ int dump(vc_id *cid)
     }
     fprintf(stdout, "};\n\n");
 
+    fprintf(stdout, "static const uint8_t dnxhd_%d_dc_codes[] = {\n     ",
+            cid->compressionID);
+    for (i = 0; i < cid->bitdepth + 4; i++)
+        fprintf(stdout, "%d, ", cid->Encode_DC_Code[i] >> 8);
+    fprintf(stdout, "\n};\n\n");
+
+    fprintf(stdout, "static const uint8_t dnxhd_%d_dc_bits[] = {\n     ",
+            cid->compressionID);
+    for (i = 0; i < cid->bitdepth + 4; i++)
+        fprintf(stdout, "%d, ", cid->Encode_DC_Code[i] & 0xFF);
+    fprintf(stdout, "\n};\n\n");
+
     return 0;
 }
 
