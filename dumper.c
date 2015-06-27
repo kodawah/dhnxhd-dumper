@@ -95,6 +95,7 @@ int dump(vc_id *cid)
     uint8_t acrun[1024];
     uint8_t acindex[1024];
     uint8_t aclevel[1024];
+
     int lastval = -1;
     int k = 0;
     for (i = 0; i <= cid->AC_Amp_Decode_2_8bits_limit; i++) {
@@ -198,6 +199,51 @@ int dump(vc_id *cid)
             fprintf(stdout, "\n   ");
     }
     fprintf(stdout, "\n};\n\n");
+
+    uint32_t runcodes[1024];
+    uint8_t runbits[1024];
+    uint8_t run[1024];
+
+    lastval = -1;
+    k = 0;
+    for (i = 0; i < 1024; i++) {
+        int val = cid->AC_Run_Decode_2_10bits[i];
+        if (lastval != val) {
+            lastval = val;
+            runbits[k] = val;
+            run[k] = val >> 8;
+            runcodes[k] = i >> (10 - runbits[k]);
+            k++;
+        }
+    }
+
+    fprintf(stdout, "static const uint16_t dnxhd_%d_run_codes[%d] = {\n   ",
+            cid->compressionID, k);
+    for (i = 0; i < k; i++) {
+        fprintf(stdout, " %4d,", runcodes[i]);
+        if ((i&0x7)==0x7)
+            fprintf(stdout, "\n   ");
+    }
+    fprintf(stdout, "\n};\n\n");
+
+    fprintf(stdout, "static const uint16_t dnxhd_%d_run_bits[%d] = {\n   ",
+            cid->compressionID, k);
+    for (i = 0; i < k; i++) {
+        fprintf(stdout, " %2d,", runbits[i]);
+        if ((i&0xF)==0xf)
+            fprintf(stdout, "\n   ");
+    }
+    fprintf(stdout, "\n};\n\n");
+
+    fprintf(stdout, "static const uint16_t dnxhd_%d_run[%d] = {\n   ",
+            cid->compressionID, k);
+    for (i = 0; i < k; i++) {
+        fprintf(stdout, " %2d,", run[i]);
+        if ((i&0xF)==0xf)
+            fprintf(stdout, "\n   ");
+    }
+    fprintf(stdout, "\n};\n\n");
+
 
     return 0;
 }
