@@ -1,3 +1,15 @@
+/*
+ * dnxhd-dumper by Vittorio Giovara, with help from Konstantin Shishkov
+ * This file is placed in the public domain.
+ * Use the program however you see fit.
+ *
+ * This utility reads all necessary tables from the binary decoder and
+ * prints them in a copy-and-paste fom suited for the Libav native decoder.
+ *
+ * Usage:
+ *     dnxhd-dumper [cid] << table
+ */
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,6 +50,7 @@ int dump(vc_id *cid)
 {
     int i;
 
+    /* Header */
     fprintf(stdout, "    { %d, %d, %d, %d, %d, %d, %d, %d,\n",
             cid->compressionID, cid->Image_Width, cid->Image_Height,
             !!strcmp((char *)cid->ScanType, "Progressive"),
@@ -55,6 +68,7 @@ int dump(vc_id *cid)
             cid->compressionID, cid->compressionID, cid->compressionID);
     fprintf(stdout, "      { FILL, ME, WITH, SENSE } },\n\n");
 
+    /* Luma weight */
     fprintf(stdout, "static const uint8_t dnxhd_%d_luma_weight[] = {\n",
             cid->compressionID);
     for (i = 0; i < 64; i += 8) {
@@ -65,6 +79,8 @@ int dump(vc_id *cid)
                 cid->LumaQTable[i + 6], cid->LumaQTable[i + 7]);
     }
     fprintf(stdout, "};\n\n");
+
+    /* Chroma weight */
     fprintf(stdout, "static const uint8_t dnxhd_%d_chroma_weight[] = {\n",
             cid->compressionID);
     for (i = 0; i < 64; i += 8) {
@@ -76,18 +92,21 @@ int dump(vc_id *cid)
     }
     fprintf(stdout, "};\n\n");
 
+    /* DC codes */
     fprintf(stdout, "static const uint8_t dnxhd_%d_dc_codes[] = {\n    ",
             cid->compressionID);
     for (i = 0; i < cid->bitdepth + 4; i++)
         fprintf(stdout, "%d, ", cid->Encode_DC_Code[i] >> 8);
     fprintf(stdout, "\n};\n\n");
 
+    /* DC bits */
     fprintf(stdout, "static const uint8_t dnxhd_%d_dc_bits[] = {\n    ",
             cid->compressionID);
     for (i = 0; i < cid->bitdepth + 4; i++)
         fprintf(stdout, "%d, ", cid->Encode_DC_Code[i] & 0xFF);
     fprintf(stdout, "\n};\n\n");
 
+    /* AC parsing */
     uint8_t repeated[65536] = { 0 };
     uint8_t acbits[1024];
     uint32_t accodes[1024];
@@ -154,6 +173,7 @@ int dump(vc_id *cid)
         }
     }
 
+    /* AC codes */
     fprintf(stdout, "static const uint16_t dnxhd_%d_ac_codes[257] = {\n   ",
             cid->compressionID);
     for (i = 0; i < k; i++) {
@@ -163,6 +183,7 @@ int dump(vc_id *cid)
     }
     fprintf(stdout, "\n};\n\n");
 
+    /* AC bits */
     fprintf(stdout, "static const uint16_t dnxhd_%d_ac_bits[257] = {\n   ",
             cid->compressionID);
     for (i = 0; i < k; i++) {
@@ -172,6 +193,7 @@ int dump(vc_id *cid)
     }
     fprintf(stdout, "\n};\n\n");
 
+    /* AC level */
     fprintf(stdout, "static const uint16_t dnxhd_%d_ac_level[257] = {\n   ",
             cid->compressionID);
     for (i = 0; i < k; i++) {
@@ -181,6 +203,7 @@ int dump(vc_id *cid)
     }
     fprintf(stdout, "\n};\n\n");
 
+    /* AC run level */
     fprintf(stdout, "static const uint16_t dnxhd_%d_ac_run_flag[257] = {\n   ",
             cid->compressionID);
     for (i = 0; i < k; i++) {
@@ -190,6 +213,7 @@ int dump(vc_id *cid)
     }
     fprintf(stdout, "\n};\n\n");
 
+    /* AC index flag */
     fprintf(stdout, "static const uint16_t dnxhd_%d_ac_index_flag[257] = {\n   ",
             cid->compressionID);
     for (i = 0; i < k; i++) {
@@ -199,6 +223,7 @@ int dump(vc_id *cid)
     }
     fprintf(stdout, "\n};\n\n");
 
+    /* Runcodes parsing */
     uint32_t runcodes[1024];
     uint8_t runbits[1024];
     uint8_t run[1024];
@@ -216,6 +241,7 @@ int dump(vc_id *cid)
         }
     }
 
+    /* Run codes */
     fprintf(stdout, "static const uint16_t dnxhd_%d_run_codes[%d] = {\n   ",
             cid->compressionID, k);
     for (i = 0; i < k; i++) {
@@ -225,6 +251,7 @@ int dump(vc_id *cid)
     }
     fprintf(stdout, "\n};\n\n");
 
+    /* Run bits */
     fprintf(stdout, "static const uint16_t dnxhd_%d_run_bits[%d] = {\n   ",
             cid->compressionID, k);
     for (i = 0; i < k; i++) {
@@ -234,6 +261,7 @@ int dump(vc_id *cid)
     }
     fprintf(stdout, "\n};\n\n");
 
+    /* Run */
     fprintf(stdout, "static const uint16_t dnxhd_%d_run[%d] = {\n   ",
             cid->compressionID, k);
     for (i = 0; i < k; i++) {
@@ -259,6 +287,8 @@ int main(int argc, char **argv)
         vc_id cid;
         memcpy(&cid, &ibuf[sizeof(vc_id) * i], sizeof(vc_id));
 
+        /* When a CID is provided, dump all tables, otherwise, just show
+         * a summary of the ones available. */
         if (argc == 2) {
             if (cid.compressionID != prof)
                 continue;
