@@ -60,11 +60,11 @@ int dump(vc_id *cid)
             cid->compressionID, cid->compressionID);
     fprintf(stdout, "      dnxhd_%d_dc_codes, dnxhd_%d_dc_bits,\n",
             cid->compressionID, cid->compressionID);
-    fprintf(stdout, "      dnxhd_%d_ac_codes, dnxhd_%d_ac_bits, dnxhd_%d_ac_level\n",
+    fprintf(stdout, "      dnxhd_%d_ac_codes, dnxhd_%d_ac_bits, dnxhd_%d_ac_level,\n",
             cid->compressionID, cid->compressionID, cid->compressionID);
-    fprintf(stdout, "      dnxhd_%d_ac_run_flag, dnxhd_%d_ac_index_flag\n",
+    fprintf(stdout, "      dnxhd_%d_ac_run_flag, dnxhd_%d_ac_index_flag,\n",
             cid->compressionID, cid->compressionID);
-    fprintf(stdout, "      dnxhd_%d_run_codes, dnxhd_%d_run_bit, dnxhd_%d_run\n",
+    fprintf(stdout, "      dnxhd_%d_run_codes, dnxhd_%d_run_bits, dnxhd_%d_run,\n",
             cid->compressionID, cid->compressionID, cid->compressionID);
     fprintf(stdout, "      { FILL, ME, WITH, SENSE } },\n\n");
 
@@ -184,7 +184,7 @@ int dump(vc_id *cid)
     fprintf(stdout, "\n};\n\n");
 
     /* AC bits */
-    fprintf(stdout, "static const uint16_t dnxhd_%d_ac_bits[257] = {\n   ",
+    fprintf(stdout, "static const uint8_t dnxhd_%d_ac_bits[257] = {\n   ",
             cid->compressionID);
     for (i = 0; i < k; i++) {
         fprintf(stdout, " %2d,", acbits[i]);
@@ -194,7 +194,7 @@ int dump(vc_id *cid)
     fprintf(stdout, "\n};\n\n");
 
     /* AC level */
-    fprintf(stdout, "static const uint16_t dnxhd_%d_ac_level[257] = {\n   ",
+    fprintf(stdout, "static const uint8_t dnxhd_%d_ac_level[257] = {\n   ",
             cid->compressionID);
     for (i = 0; i < k; i++) {
         fprintf(stdout, " %2d,", aclevel[i]);
@@ -204,20 +204,20 @@ int dump(vc_id *cid)
     fprintf(stdout, "\n};\n\n");
 
     /* AC run level */
-    fprintf(stdout, "static const uint16_t dnxhd_%d_ac_run_flag[257] = {\n   ",
+    fprintf(stdout, "static const uint8_t dnxhd_%d_ac_run_flag[257] = {\n   ",
             cid->compressionID);
     for (i = 0; i < k; i++) {
-        fprintf(stdout, " %2d,", acrun[i]);
+        fprintf(stdout, " %1d,", acrun[i]);
         if ((i & 0xF) == 0xf)
             fprintf(stdout, "\n   ");
     }
     fprintf(stdout, "\n};\n\n");
 
     /* AC index flag */
-    fprintf(stdout, "static const uint16_t dnxhd_%d_ac_index_flag[257] = {\n   ",
+    fprintf(stdout, "static const uint8_t dnxhd_%d_ac_index_flag[257] = {\n   ",
             cid->compressionID);
     for (i = 0; i < k; i++) {
-        fprintf(stdout, " %2d,", acindex[i]);
+        fprintf(stdout, " %1d,", acindex[i]);
         if ((i & 0xF) == 0xf)
             fprintf(stdout, "\n   ");
     }
@@ -252,7 +252,7 @@ int dump(vc_id *cid)
     fprintf(stdout, "\n};\n\n");
 
     /* Run bits */
-    fprintf(stdout, "static const uint16_t dnxhd_%d_run_bits[%d] = {\n   ",
+    fprintf(stdout, "static const uint8_t dnxhd_%d_run_bits[%d] = {\n   ",
             cid->compressionID, k);
     for (i = 0; i < k; i++) {
         fprintf(stdout, " %2d,", runbits[i]);
@@ -262,7 +262,7 @@ int dump(vc_id *cid)
     fprintf(stdout, "\n};\n\n");
 
     /* Run */
-    fprintf(stdout, "static const uint16_t dnxhd_%d_run[%d] = {\n   ",
+    fprintf(stdout, "static const uint8_t dnxhd_%d_run[%d] = {\n   ",
             cid->compressionID, k);
     for (i = 0; i < k; i++) {
         fprintf(stdout, " %2d,", run[i]);
