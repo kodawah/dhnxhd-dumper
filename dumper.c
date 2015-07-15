@@ -88,7 +88,6 @@ int dump(vc_id *cid)
         fprintf(stdout, "%d, ", cid->Encode_DC_Code[i] & 0xFF);
     fprintf(stdout, "\n};\n\n");
 
-
     uint8_t repeated[65536] = { 0 };
     uint8_t acbits[1024];
     uint32_t accodes[1024];
@@ -97,16 +96,16 @@ int dump(vc_id *cid)
     uint8_t aclevel[1024];
 
     int lastval = -1;
-    int k = 0;
+    int k       = 0;
     for (i = 0; i <= cid->AC_Amp_Decode_2_8bits_limit; i++) {
-        int val = cid->AC_Amp_Decode_2_8bits[i];
-        int sym = val >> 9;
+        int val  = cid->AC_Amp_Decode_2_8bits[i];
+        int sym  = val >> 9;
         int code = val & 0x1F;
         if (code < 0xf) {
             if (!repeated[val]) {
                 repeated[val] = 1;
 
-                lastval = val;
+                lastval    = val;
                 acbits[k]  = code;
                 acrun[k]   = !!(val & 0x020);
                 acindex[k] = !!(val & 0x040);
@@ -118,33 +117,33 @@ int dump(vc_id *cid)
     }
 
     for (i = 0; i <= cid->AC_Amp_Decode_9_12bits_limit; i++) {
-        int val = cid->AC_Amp_Decode_9_12bits[i & 0xFF];
-        int sym = val >> 9;
+        int val  = cid->AC_Amp_Decode_9_12bits[i & 0xFF];
+        int sym  = val >> 9;
         int code = val & 0x1F;
         if (code < 0xf) {
             if (!repeated[val]) {
                 repeated[val] = 1;
 
-                lastval = val;
+                lastval    = val;
                 acbits[k]  = code;
                 acrun[k]   = !!(val & 0x020);
                 acindex[k] = !!(val & 0x040);
                 aclevel[k] = !(val & 0x080) ? sym : 0;
-                accodes[k] = (0xf00 +i) >> (12 - code);
+                accodes[k] = (0xf00 + i) >> (12 - code);
                 k++;
             }
         }
     }
 
     for (i = 0; i <= 512; i++) {
-        int val = cid->AC_Amp_Decode_13_16bits[i & 0x1FF];
-        int sym = val >> 9;
+        int val  = cid->AC_Amp_Decode_13_16bits[i & 0x1FF];
+        int sym  = val >> 9;
         int code = val & 0x1F;
         if (code <= 0x10) {
             if (!repeated[val]) {
                 repeated[val] = 1;
 
-                lastval = val;
+                lastval    = val;
                 acbits[k]  = code;
                 acrun[k]   = !!(val & 0x020);
                 acindex[k] = !!(val & 0x040);
@@ -159,7 +158,7 @@ int dump(vc_id *cid)
             cid->compressionID);
     for (i = 0; i < k; i++) {
         fprintf(stdout, " %5d,", accodes[i]);
-        if ((i&0x7)==0x7)
+        if ((i & 0x7) == 0x7)
             fprintf(stdout, "\n   ");
     }
     fprintf(stdout, "\n};\n\n");
@@ -168,7 +167,7 @@ int dump(vc_id *cid)
             cid->compressionID);
     for (i = 0; i < k; i++) {
         fprintf(stdout, " %2d,", acbits[i]);
-        if ((i&0xF)==0xf)
+        if ((i & 0xF) == 0xf)
             fprintf(stdout, "\n   ");
     }
     fprintf(stdout, "\n};\n\n");
@@ -177,7 +176,7 @@ int dump(vc_id *cid)
             cid->compressionID);
     for (i = 0; i < k; i++) {
         fprintf(stdout, " %2d,", aclevel[i]);
-        if ((i&0xF)==0xf)
+        if ((i & 0xF) == 0xf)
             fprintf(stdout, "\n   ");
     }
     fprintf(stdout, "\n};\n\n");
@@ -186,7 +185,7 @@ int dump(vc_id *cid)
             cid->compressionID);
     for (i = 0; i < k; i++) {
         fprintf(stdout, " %2d,", acrun[i]);
-        if ((i&0xF)==0xf)
+        if ((i & 0xF) == 0xf)
             fprintf(stdout, "\n   ");
     }
     fprintf(stdout, "\n};\n\n");
@@ -195,7 +194,7 @@ int dump(vc_id *cid)
             cid->compressionID);
     for (i = 0; i < k; i++) {
         fprintf(stdout, " %2d,", acindex[i]);
-        if ((i&0xF)==0xf)
+        if ((i & 0xF) == 0xf)
             fprintf(stdout, "\n   ");
     }
     fprintf(stdout, "\n};\n\n");
@@ -205,13 +204,13 @@ int dump(vc_id *cid)
     uint8_t run[1024];
 
     lastval = -1;
-    k = 0;
+    k       = 0;
     for (i = 0; i < 1024; i++) {
         int val = cid->AC_Run_Decode_2_10bits[i];
         if (lastval != val) {
-            lastval = val;
-            runbits[k] = val;
-            run[k] = val >> 8;
+            lastval     = val;
+            runbits[k]  = val;
+            run[k]      = val >> 8;
             runcodes[k] = i >> (10 - runbits[k]);
             k++;
         }
@@ -221,7 +220,7 @@ int dump(vc_id *cid)
             cid->compressionID, k);
     for (i = 0; i < k; i++) {
         fprintf(stdout, " %4d,", runcodes[i]);
-        if ((i&0x7)==0x7)
+        if ((i & 0x7) == 0x7)
             fprintf(stdout, "\n   ");
     }
     fprintf(stdout, "\n};\n\n");
@@ -230,7 +229,7 @@ int dump(vc_id *cid)
             cid->compressionID, k);
     for (i = 0; i < k; i++) {
         fprintf(stdout, " %2d,", runbits[i]);
-        if ((i&0xF)==0xf)
+        if ((i & 0xF) == 0xf)
             fprintf(stdout, "\n   ");
     }
     fprintf(stdout, "\n};\n\n");
@@ -239,11 +238,10 @@ int dump(vc_id *cid)
             cid->compressionID, k);
     for (i = 0; i < k; i++) {
         fprintf(stdout, " %2d,", run[i]);
-        if ((i&0xF)==0xf)
+        if ((i & 0xF) == 0xf)
             fprintf(stdout, "\n   ");
     }
     fprintf(stdout, "\n};\n\n");
-
 
     return 0;
 }
